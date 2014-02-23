@@ -1,8 +1,7 @@
 #!/usr/bin/env lein-exec
 
 (require 'leiningen.exec
-         '[clojure.java.shell :refer [sh]]
-         '[clojure.pprint])
+         '[clojure.java.shell :refer [sh]])
 
 (def personal {:username "personal"
                :email "test-personal@example.com"
@@ -25,5 +24,5 @@
 
 (let [old-origin (:out (sh "git" "config" "--get" "remote.origin.url"))
       old-split (clojure.string/split old-origin #"\:")
-      new-origin (str (config-name :origin-host) ":" (second old-split))]
+      new-origin (str (config-name :origin-host) ":" (clojure.string/trim-newline (second old-split)))]
       (sh "git" "config" "--replace-all" "remote.origin.url" new-origin))
