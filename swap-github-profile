@@ -1,0 +1,29 @@
+#!/usr/bin/env lein-exec
+
+(require 'leiningen.exec
+         '[clojure.java.shell :refer [sh]]
+         '[clojure.pprint])
+
+(def personal {:username "personal"
+               :email "test-personal@example.com"
+               :origin-host "git@github-PERSONAL"})
+
+(def work {:username "work"
+           :email "test-work@work.com"
+           :origin-host "git@github.com"})
+
+(def config-name (do
+                   (when (not= (count *command-line-args*) 2)
+                     (do (println "Error unexpected arity, please call script like this:\nswap-github-profile personal")
+                         (System/exit 1)))
+                   (let [conf (symbol (second *command-line-args*))]
+                        (resolve conf)))) 
+
+(println (str "Swapping github profile to " config-name))
+(sh "git" "config" "user.name" (config-name :username))
+(sh "git" "config" "user.email" (config-name :email))
+
+(let [old-origin (:out (sh "git" "config" "--get" "remote.origin.url"))
+      old-split (clojure.string/split old-origin #"\:")
+      new-origin (str (config-name :origin-host) ":" (second old-split))]
+      (sh "git" "config" "--replace-all" "remote.origin.url" new-origin))
